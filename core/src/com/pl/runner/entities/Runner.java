@@ -5,7 +5,7 @@ import com.pl.runner.box2d.RunnerUserData;
 
 public class Runner extends GameActor {
 
-    private boolean isJumping, isDodging;
+    private boolean isJumping, isDodging, isHit;
 
     public Runner(Body body) {
         super(body);
@@ -17,7 +17,7 @@ public class Runner extends GameActor {
     }
 
     public void jump(){
-        if(!(isJumping || isDodging)){
+        if(!(isJumping || isDodging) || isHit){
             body.applyLinearImpulse(getUserData().getJumpingLinearImpulse(),body.getWorldCenter(),true);
             isJumping = true;
         }
@@ -28,7 +28,7 @@ public class Runner extends GameActor {
     }
 
     public void dodge() {
-        if (!isJumping) {
+        if (!(isJumping || isHit)) {
             body.setTransform(getUserData().getDodgePosition(), getUserData().getDodgeAngle());
             isDodging = true;
         }
@@ -36,7 +36,18 @@ public class Runner extends GameActor {
 
     public void stopDodge() {
         isDodging = false;
-        body.setTransform(getUserData().getRunningPosition(), 0f);
+        if (!isHit) {
+            body.setTransform(getUserData().getRunningPosition(), 0f);
+        }
+    }
+
+    public void hit() {
+        body.applyAngularImpulse(getUserData().getHitAngularImpulse(), true);
+        isHit = true;
+    }
+
+    public boolean isHit() {
+        return isHit;
     }
 
     public boolean isDodging() {

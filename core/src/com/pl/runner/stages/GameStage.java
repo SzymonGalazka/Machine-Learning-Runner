@@ -1,6 +1,7 @@
 package com.pl.runner.stages;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -12,6 +13,8 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Array;
+import com.pl.runner.entities.Enemy;
 import com.pl.runner.entities.Ground;
 import com.pl.runner.entities.Runner;
 import com.pl.runner.utils.BodyUtils;
@@ -44,6 +47,7 @@ public class GameStage extends Stage implements ContactListener{
         world.setContactListener(this);
         initGround();
         initRunner();
+        initEnemy();
     }
 
     private void initGround() {
@@ -53,19 +57,38 @@ public class GameStage extends Stage implements ContactListener{
 
     private void initRunner() {
         runner = new Runner(WorldUtils.createRunner(world));
+        runner.setColor(Color.BLUE);
         addActor(runner);
     }
 
+    private void initEnemy() {
+        Enemy enemy = new Enemy(WorldUtils.createEnemy(world));
+        addActor(enemy);
+    }
     private void setupCamera() {
         camera = new OrthographicCamera(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0f);
         camera.update();
     }
 
+    private void update(Body body) {
+        if (!BodyUtils.bodyInBounds(body)) {
+            if (BodyUtils.bodyIsEnemy(body) && !runner.isHit()) {
+                initEnemy();
+            }
+            world.destroyBody(body);
+        }
+    }
     @Override
     public void act(float delta) {
         super.act(delta);
 
+        Array<Body> bodies = new Array<Body>(world.getBodyCount());
+        world.getBodies(bodies);
+
+        for (Body body : bodies) {
+            update(body);
+        }
         // Fixed timestep
         accumulator += delta;
 
@@ -119,7 +142,10 @@ public class GameStage extends Stage implements ContactListener{
         Body a = contact.getFixtureA().getBody();
         Body b = contact.getFixtureB().getBody();
 
-        if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsGround(b)) ||
+        if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsEnemy(b)) ||
+                (BodyUtils.bodyIsEnemy(a) && BodyUtils.bodyIsRunner(b))) {
+            runner.hit();
+        } else if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsGround(b)) ||
                 (BodyUtils.bodyIsGround(a) && BodyUtils.bodyIsRunner(b))) {
             runner.landed();
         }
