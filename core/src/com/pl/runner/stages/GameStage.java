@@ -3,6 +3,7 @@ package com.pl.runner.stages;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
@@ -167,12 +168,20 @@ public class GameStage extends Stage implements ContactListener{
 
         Body a = contact.getFixtureA().getBody();
         Body b = contact.getFixtureB().getBody();
-
         if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsEnemy(b)) ||
                 (BodyUtils.bodyIsEnemy(a) && BodyUtils.bodyIsRunner(b))) {
             runner.hit();
         }else if ((BodyUtils.bodyIsEnemy(a) && BodyUtils.bodyIsSensor(b)) ||
                 (BodyUtils.bodyIsSensor(a) && BodyUtils.bodyIsEnemy(b))) {
+            Body c;
+            if(BodyUtils.bodyIsSensor(a)) c = contact.getFixtureA().getBody();
+            else c = contact.getFixtureB().getBody();
+            Vector2 whichSensor = c.getPosition();
+            System.out.println(c.getPosition());
+            if(whichSensor.x > 5 && whichSensor.y > 2) sensorUpFar.changeState(true);
+            else if(whichSensor.x > 5 && whichSensor.y < 2) sensorDownFar.changeState(true);
+            else if(whichSensor.x < 5 && whichSensor.y > 2) sensorUpClose.changeState(true);
+            else if(whichSensor.x < 5 && whichSensor.y < 2) sensorDownClose.changeState(true);
 
         } else if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsGround(b)) ||
         (BodyUtils.bodyIsGround(a) && BodyUtils.bodyIsRunner(b))) {
@@ -183,7 +192,10 @@ public class GameStage extends Stage implements ContactListener{
 
     @Override
     public void endContact(Contact contact) {
-
+        sensorUpFar.changeState(false);
+        sensorUpClose.changeState(false);
+        sensorDownFar.changeState(false);
+        sensorDownClose.changeState(false);
     }
 
     @Override

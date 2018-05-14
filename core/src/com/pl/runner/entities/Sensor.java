@@ -9,10 +9,10 @@ import com.pl.runner.box2d.SensorUserData;
 import com.pl.runner.box2d.UserData;
 import com.pl.runner.utils.BodyUtils;
 
-public class Sensor extends GameActor{
+public class Sensor extends GameActor {
 
     private boolean sensorEnabled;
-    private int sensorNumber;
+    public static int sensorNumber;
     public Sensor(Body body) {
         super(body);
         sensorNumber++;
@@ -23,9 +23,10 @@ public class Sensor extends GameActor{
         return (SensorUserData) userData;
     }
 
-    public void changeState(){
-        sensorEnabled = !sensorEnabled;
+    public void changeState(boolean state){
+        sensorEnabled = state;
     }
+
 
     public boolean isSensorEnabled() {
         return sensorEnabled;
