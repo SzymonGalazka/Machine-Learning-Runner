@@ -1,7 +1,6 @@
 package com.pl.runner.stages;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -17,7 +16,9 @@ import com.badlogic.gdx.utils.Array;
 import com.pl.runner.entities.Enemy;
 import com.pl.runner.entities.Ground;
 import com.pl.runner.entities.Runner;
+import com.pl.runner.entities.Sensor;
 import com.pl.runner.utils.BodyUtils;
+import com.pl.runner.utils.Constants;
 import com.pl.runner.utils.WorldUtils;
 
 public class GameStage extends Stage implements ContactListener{
@@ -28,7 +29,8 @@ public class GameStage extends Stage implements ContactListener{
     private Vector3 touchPoint;
     private World world;
     private Ground ground;
-    private Runner runner;
+    private Sensor sensorUpClose, sensorUpFar, sensorDownClose, sensorDownFar;
+    private Runner runner, runner2, runner3;
     private final float TIME_STEP = 1 / 300f;
     private float accumulator = 0f;
 
@@ -48,6 +50,7 @@ public class GameStage extends Stage implements ContactListener{
         initGround();
         initRunner();
         initEnemy();
+        initSensor();
     }
 
     private void initGround() {
@@ -55,10 +58,23 @@ public class GameStage extends Stage implements ContactListener{
         addActor(ground);
     }
 
+    private void initSensor(){
+        sensorUpClose = new Sensor(WorldUtils.createSensor(world, Constants.SENSOR_CLOSE_X,Constants.SENSOR_UP_Y));
+        sensorUpFar = new Sensor(WorldUtils.createSensor(world, Constants.SENSOR_FAR_X,Constants.SENSOR_UP_Y));
+        sensorDownClose = new Sensor(WorldUtils.createSensor(world, Constants.SENSOR_CLOSE_X,Constants.SENSOR_DOWN_Y));
+        sensorDownFar = new Sensor(WorldUtils.createSensor(world, Constants.SENSOR_FAR_X,Constants.SENSOR_DOWN_Y));
+        addActor(sensorUpClose);
+        addActor(sensorUpFar);
+        addActor(sensorDownClose);
+        addActor(sensorDownFar);
+    }
     private void initRunner() {
         runner = new Runner(WorldUtils.createRunner(world));
-        runner.setColor(Color.BLUE);
+        //runner2 = new Runner(WorldUtils.createRunner(world));
+        //runner3 = new Runner(WorldUtils.createRunner(world));
         addActor(runner);
+        //addActor(runner2);
+        //addActor(runner3);
     }
 
     private void initEnemy() {

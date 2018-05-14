@@ -8,6 +8,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.pl.runner.box2d.EnemyUserData;
 import com.pl.runner.box2d.GroundUserData;
 import com.pl.runner.box2d.RunnerUserData;
+import com.pl.runner.box2d.SensorUserData;
 import com.pl.runner.enums.EnemyType;
 
 public class WorldUtils {
@@ -55,6 +56,18 @@ public class WorldUtils {
         shape.setAsBox(Constants.GROUND_WIDTH / 2, Constants.GROUND_HEIGHT / 2);
         body.createFixture(shape, Constants.GROUND_DENSITY);
         body.setUserData(new GroundUserData());
+        shape.dispose();
+        return body;
+    }
+
+    public static Body createSensor(World world, float x,float y){
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(new Vector2(x,y));
+        Body body = world.createBody(bodyDef);
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(Constants.SENSOR_WIDTH/2, Constants.SENSOR_HEIGHT/2);
+        body.createFixture(shape,Constants.SENSOR_DENSITY);
+        body.setUserData(new SensorUserData());
         shape.dispose();
         return body;
     }
