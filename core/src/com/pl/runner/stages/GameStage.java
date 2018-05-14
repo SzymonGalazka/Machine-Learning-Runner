@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
+import com.pl.runner.box2d.UserData;
 import com.pl.runner.entities.Enemy;
 import com.pl.runner.entities.Ground;
 import com.pl.runner.entities.Runner;
@@ -170,14 +171,15 @@ public class GameStage extends Stage implements ContactListener{
         if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsEnemy(b)) ||
                 (BodyUtils.bodyIsEnemy(a) && BodyUtils.bodyIsRunner(b))) {
             runner.hit();
-        } else if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsGround(b)) ||
-                (BodyUtils.bodyIsGround(a) && BodyUtils.bodyIsRunner(b))) {
-            runner.landed();
         }else if ((BodyUtils.bodyIsEnemy(a) && BodyUtils.bodyIsSensor(b)) ||
                 (BodyUtils.bodyIsSensor(a) && BodyUtils.bodyIsEnemy(b))) {
 
+        } else if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsGround(b)) ||
+        (BodyUtils.bodyIsGround(a) && BodyUtils.bodyIsRunner(b))) {
+            runner.landed();
         }
     }
+
 
     @Override
     public void endContact(Contact contact) {

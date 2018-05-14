@@ -41,5 +41,9 @@ public class Constants {
     public static final float SENSOR_WIDTH = 2f;
     public static final float SENSOR_HEIGHT = 1f;
     public static final float SENSOR_DENSITY = 0f;
+    public static final float SENSOR_GRAVITY_SCALE = 0f;
+    public static final short BIT_PLAYERSENSORS = 1;
+    public static final short BIT_GROUNDENEMY = 2;
+
 
 }
