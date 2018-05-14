@@ -34,8 +34,8 @@ public class Constants {
     public static final float FLYING_ENEMY_Y = 3f;
     public static final Vector2 ENEMY_LINEAR_VELOCITY = new Vector2(-10f, 0);
 
-    public static final float SENSOR_FAR_X = 7f;
-    public static final float SENSOR_CLOSE_X = 5f;
+    public static final float SENSOR_FAR_X = 5.5f;
+    public static final float SENSOR_CLOSE_X = 3.5f;
     public static final float SENSOR_DOWN_Y = GROUND_Y+1.5f;
     public static final float SENSOR_UP_Y = GROUND_Y+2.5f;
     public static final float SENSOR_WIDTH = 2f;

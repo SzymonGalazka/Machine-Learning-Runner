@@ -17,6 +17,7 @@ import com.pl.runner.entities.Enemy;
 import com.pl.runner.entities.Ground;
 import com.pl.runner.entities.Runner;
 import com.pl.runner.entities.Sensor;
+import com.pl.runner.ui.SensorsLabel;
 import com.pl.runner.utils.BodyUtils;
 import com.pl.runner.utils.Constants;
 import com.pl.runner.utils.WorldUtils;
@@ -30,7 +31,8 @@ public class GameStage extends Stage implements ContactListener{
     private World world;
     private Ground ground;
     private Sensor sensorUpClose, sensorUpFar, sensorDownClose, sensorDownFar;
-    private Runner runner, runner2, runner3;
+    private Runner runner;
+    private SensorsLabel sensorsLabel;
     private final float TIME_STEP = 1 / 300f;
     private float accumulator = 0f;
 
@@ -51,6 +53,12 @@ public class GameStage extends Stage implements ContactListener{
         initRunner();
         initEnemy();
         initSensor();
+        initSensorsLabel();
+    }
+
+    private void initSensorsLabel() {
+        sensorsLabel = new SensorsLabel();
+        addActor(sensorsLabel);
     }
 
     private void initGround() {
@@ -70,11 +78,7 @@ public class GameStage extends Stage implements ContactListener{
     }
     private void initRunner() {
         runner = new Runner(WorldUtils.createRunner(world));
-        //runner2 = new Runner(WorldUtils.createRunner(world));
-        //runner3 = new Runner(WorldUtils.createRunner(world));
         addActor(runner);
-        //addActor(runner2);
-        //addActor(runner3);
     }
 
     private void initEnemy() {
@@ -98,6 +102,7 @@ public class GameStage extends Stage implements ContactListener{
     @Override
     public void act(float delta) {
         super.act(delta);
+        updateLabel();
 
         Array<Body> bodies = new Array<Body>(world.getBodyCount());
         world.getBodies(bodies);
@@ -115,6 +120,10 @@ public class GameStage extends Stage implements ContactListener{
 
         //TODO: Implement interpolation
 
+    }
+
+    private void updateLabel() {
+        sensorsLabel.setText("Stan sensorow: \n"+sensorUpClose.isSensorEnabled()+" "+sensorUpFar.isSensorEnabled()+"\n"+sensorDownClose.isSensorEnabled()+" "+sensorDownFar.isSensorEnabled());
     }
 
     @Override
@@ -164,6 +173,9 @@ public class GameStage extends Stage implements ContactListener{
         } else if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsGround(b)) ||
                 (BodyUtils.bodyIsGround(a) && BodyUtils.bodyIsRunner(b))) {
             runner.landed();
+        }else if ((BodyUtils.bodyIsEnemy(a) && BodyUtils.bodyIsSensor(b)) ||
+                (BodyUtils.bodyIsSensor(a) && BodyUtils.bodyIsEnemy(b))) {
+
         }
     }
 

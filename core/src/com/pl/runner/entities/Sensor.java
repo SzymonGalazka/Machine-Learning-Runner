@@ -6,6 +6,8 @@ import com.pl.runner.box2d.UserData;
 
 public class Sensor extends GameActor {
 
+    private boolean sensorEnabled;
+
     public Sensor(Body body) {
         super(body);
     }
@@ -13,5 +15,13 @@ public class Sensor extends GameActor {
     @Override
     public UserData getUserData() {
         return (SensorUserData) userData;
+    }
+
+    public void changeState(){
+        sensorEnabled = !sensorEnabled;
+    }
+
+    public boolean isSensorEnabled() {
+        return sensorEnabled;
     }
 }
