@@ -14,11 +14,11 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
-import com.pl.runner.box2d.UserData;
 import com.pl.runner.entities.Enemy;
 import com.pl.runner.entities.Ground;
 import com.pl.runner.entities.Runner;
 import com.pl.runner.entities.Sensor;
+import com.pl.runner.genes.GeneController;
 import com.pl.runner.ui.SensorsLabel;
 import com.pl.runner.utils.BodyUtils;
 import com.pl.runner.utils.Constants;
@@ -32,8 +32,8 @@ public class GameStage extends Stage implements ContactListener{
     private Vector3 touchPoint;
     private World world;
     private Ground ground;
-    private Sensor sensorUpClose, sensorUpFar, sensorDownClose, sensorDownFar;
-    private Runner runner;
+    public static Sensor sensorUpClose, sensorUpFar, sensorDownClose, sensorDownFar;
+    private static Runner runner;
     private SensorsLabel sensorsLabel;
     private final float TIME_STEP = 1 / 300f;
     private float accumulator = 0f;
@@ -105,6 +105,8 @@ public class GameStage extends Stage implements ContactListener{
     public void act(float delta) {
         super.act(delta);
         updateLabel();
+        checkSensors();
+        GeneController.calculateOutput(runner);
 
         Array<Body> bodies = new Array<Body>(world.getBodyCount());
         world.getBodies(bodies);
@@ -122,6 +124,9 @@ public class GameStage extends Stage implements ContactListener{
 
         //TODO: Implement interpolation
 
+    }
+
+    private void checkSensors() {
     }
 
     private void updateLabel() {
@@ -177,12 +182,11 @@ public class GameStage extends Stage implements ContactListener{
             if(BodyUtils.bodyIsSensor(a)) c = contact.getFixtureA().getBody();
             else c = contact.getFixtureB().getBody();
             Vector2 whichSensor = c.getPosition();
-            System.out.println(c.getPosition());
-            if(whichSensor.x > 5 && whichSensor.y > 2) sensorUpFar.changeState(true);
-            else if(whichSensor.x > 5 && whichSensor.y < 2) sensorDownFar.changeState(true);
-            else if(whichSensor.x < 5 && whichSensor.y > 2) sensorUpClose.changeState(true);
-            else if(whichSensor.x < 5 && whichSensor.y < 2) sensorDownClose.changeState(true);
-
+            //System.out.println(c.getPosition()); wypisanie wektora kolizji
+            if(whichSensor.x > 3.5 && whichSensor.y > 2) sensorUpFar.changeState(true);
+            else if(whichSensor.x > 3.5 && whichSensor.y < 2) sensorDownFar.changeState(true);
+            else if(whichSensor.x <= 3.5 && whichSensor.y > 2) sensorUpClose.changeState(true);
+            else if(whichSensor.x <= 3.5 && whichSensor.y < 2) sensorDownClose.changeState(true);
         } else if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsGround(b)) ||
         (BodyUtils.bodyIsGround(a) && BodyUtils.bodyIsRunner(b))) {
             runner.landed();

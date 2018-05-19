@@ -2,13 +2,16 @@ package com.pl.runner.entities;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.pl.runner.box2d.RunnerUserData;
+import com.pl.runner.genes.Genotype;
 
 public class Runner extends GameActor {
 
     private boolean isJumping, isDodging, isHit;
+    public Genotype genotype;
 
     public Runner(Body body) {
         super(body);
+        genotype = new Genotype();
     }
 
     @Override

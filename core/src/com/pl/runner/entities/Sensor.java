@@ -1,13 +1,7 @@
 package com.pl.runner.entities;
 
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.Contact;
-import com.badlogic.gdx.physics.box2d.ContactImpulse;
-import com.badlogic.gdx.physics.box2d.ContactListener;
-import com.badlogic.gdx.physics.box2d.Manifold;
 import com.pl.runner.box2d.SensorUserData;
-import com.pl.runner.box2d.UserData;
-import com.pl.runner.utils.BodyUtils;
 
 public class Sensor extends GameActor {
 
@@ -28,11 +22,8 @@ public class Sensor extends GameActor {
     }
 
 
-    public boolean isSensorEnabled() {
-        return sensorEnabled;
+    public int isSensorEnabled() {
+        return sensorEnabled ? 1 : 0;
     }
 
-    public int getSensorNumber() {
-        return sensorNumber;
-    }
 }
