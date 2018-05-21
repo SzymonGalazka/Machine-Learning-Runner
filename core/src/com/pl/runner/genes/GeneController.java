@@ -11,16 +11,10 @@ import static com.pl.runner.stages.GameStage.sensorUpFar;
 public class GeneController {
 
     private double[] topGenotype;
+    private static long topScore;
 
+    private static int topGeneration;
 
-
-    public double[] getTopGenotype() {
-        return topGenotype;
-    }
-
-    public void setTopGenotype(double[] topGenotype) {
-        this.topGenotype = topGenotype;
-    }
 
     public static void calculateOutput(Runner runner){
         double parsedOutput = 1/(1+Math.exp(-sumFunction(runner)));
@@ -46,5 +40,31 @@ public class GeneController {
             System.out.println(parsedOutput);
             runner.jump();
         }
+    }
+
+
+
+    public double[] getTopGenotype() {
+        return topGenotype;
+    }
+
+    public void setTopGenotype(double[] topGenotype) {
+        this.topGenotype = topGenotype;
+    }
+
+    public static long getTopScore() {
+        return topScore;
+    }
+
+    public static void setTopScore(long topScore) {
+        GeneController.topScore = topScore;
+    }
+
+    public static int getTopGeneration() {
+        return topGeneration;
+    }
+
+    public static void setTopGeneration(int topGeneration) {
+        GeneController.topGeneration = topGeneration;
     }
 }

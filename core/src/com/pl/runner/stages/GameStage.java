@@ -14,11 +14,14 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Timer;
+import com.pl.runner.RunnerGame;
 import com.pl.runner.entities.Enemy;
 import com.pl.runner.entities.Ground;
 import com.pl.runner.entities.Runner;
 import com.pl.runner.entities.Sensor;
 import com.pl.runner.genes.GeneController;
+import com.pl.runner.ui.ScoreLabel;
 import com.pl.runner.ui.SensorsLabel;
 import com.pl.runner.utils.BodyUtils;
 import com.pl.runner.utils.Constants;
@@ -27,21 +30,25 @@ import com.pl.runner.utils.WorldUtils;
 public class GameStage extends Stage implements ContactListener{
     private static final int VIEWPORT_WIDTH = 20;
     private static final int VIEWPORT_HEIGHT = 13;
+    private RunnerGame game;
     private Rectangle screenRightSide, screenLeftSide;
-
     private Vector3 touchPoint;
     private World world;
     private Ground ground;
     public static Sensor sensorUpClose, sensorUpFar, sensorDownClose, sensorDownFar;
     private static Runner runner;
     private SensorsLabel sensorsLabel;
+    private ScoreLabel scoreLabel;
     private final float TIME_STEP = 1 / 300f;
     private float accumulator = 0f;
+    private long startTime = System.currentTimeMillis(), score;
+
 
     private OrthographicCamera camera;
     private Box2DDebugRenderer renderer;
 
-    public GameStage() {
+    public GameStage(RunnerGame game) {
+        this.game=game;
         initWorld();
         setupCamera();
         setupTouchControlAreas();
@@ -56,6 +63,12 @@ public class GameStage extends Stage implements ContactListener{
         initEnemy();
         initSensor();
         initSensorsLabel();
+        initScoreLabel();
+    }
+
+    private void initScoreLabel() {
+        scoreLabel = new ScoreLabel();
+        addActor(scoreLabel);
     }
 
     private void initSensorsLabel() {
@@ -104,8 +117,7 @@ public class GameStage extends Stage implements ContactListener{
     @Override
     public void act(float delta) {
         super.act(delta);
-        updateLabel();
-        checkSensors();
+        updateLabels();
         GeneController.calculateOutput(runner);
 
         Array<Body> bodies = new Array<Body>(world.getBodyCount());
@@ -126,11 +138,11 @@ public class GameStage extends Stage implements ContactListener{
 
     }
 
-    private void checkSensors() {
-    }
 
-    private void updateLabel() {
+    private void updateLabels() {
         sensorsLabel.setText("Stan sensorow: \n"+sensorUpClose.isSensorEnabled()+" "+sensorUpFar.isSensorEnabled()+"\n"+sensorDownClose.isSensorEnabled()+" "+sensorDownFar.isSensorEnabled());
+        score=(System.currentTimeMillis()-startTime)/100;
+        scoreLabel.setText("Najlepsza generacja: "+GeneController.getTopGeneration()+"\nNajlepszy wynik: "+GeneController.getTopScore()+"\nAktualny wynik: "+score);
     }
 
     @Override
@@ -171,11 +183,22 @@ public class GameStage extends Stage implements ContactListener{
     @Override
     public void beginContact(Contact contact) {
 
-        Body a = contact.getFixtureA().getBody();
-        Body b = contact.getFixtureB().getBody();
+        final Body a = contact.getFixtureA().getBody();
+        final Body b = contact.getFixtureB().getBody();
         if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsEnemy(b)) ||
                 (BodyUtils.bodyIsEnemy(a) && BodyUtils.bodyIsRunner(b))) {
             runner.hit();
+
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    world.destroyBody(a);
+                    world.destroyBody(b);
+                    saveProgress();
+                    game.create();
+                }
+            },3);
+
         }else if ((BodyUtils.bodyIsEnemy(a) && BodyUtils.bodyIsSensor(b)) ||
                 (BodyUtils.bodyIsSensor(a) && BodyUtils.bodyIsEnemy(b))) {
             Body c;
@@ -190,6 +213,13 @@ public class GameStage extends Stage implements ContactListener{
         } else if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsGround(b)) ||
         (BodyUtils.bodyIsGround(a) && BodyUtils.bodyIsRunner(b))) {
             runner.landed();
+        }
+    }
+
+    private void saveProgress() {
+        if(score>GeneController.getTopScore()) {
+            GeneController.setTopGeneration(game.getGeneration());
+            GeneController.setTopScore(score);
         }
     }
 
@@ -219,7 +249,9 @@ public class GameStage extends Stage implements ContactListener{
     private boolean leftSideTouched(float x, float y) {
         return screenLeftSide.contains(x, y);
     }
+
     private boolean rightSideTouched(float x, float y) {
         return screenRightSide.contains(x, y);
     }
+
 }
