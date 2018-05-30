@@ -210,7 +210,7 @@ public class GameStage extends Stage implements ContactListener{
                         public void run() {
                             runners.remove(r);
                         }
-                    },2);
+                    },1);
                     break;
                 }
             }
