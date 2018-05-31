@@ -1,6 +1,5 @@
 package com.pl.runner.stages;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
@@ -155,7 +154,7 @@ public class GameStage extends Stage implements ContactListener{
     private void updateLabels() {
         sensorsLabel.setText("Stan sensorow: \n"+sensorUpClose.isSensorEnabled()+" "+sensorUpFar.isSensorEnabled()+"\n"+sensorDownClose.isSensorEnabled()+" "+sensorDownFar.isSensorEnabled());
         score=(System.currentTimeMillis()-startTime)/100;
-        scoreLabel.setText("Najlepsza generacja: "+GeneController.getTopGeneration()+"    Najlepszy wynik: "+GeneController.getTopScore()+"\n Aktualna generacja: "+game.getGeneration()+"     Aktualny wynik: "+score+"\n Ilość żywych biegaczy: "+runners.size());
+        scoreLabel.setText("Najlepsza generacja: "+GeneController.getTopGeneration()+"    Najlepszy wynik: "+GeneController.getTopScore()+"\n Aktualna generacja: "+game.getGeneration()+"     Aktualny wynik: "+score+"\n Ilość zywych biegaczy: "+runners.size());
     }
 
     @Override
