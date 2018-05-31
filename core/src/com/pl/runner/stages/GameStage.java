@@ -1,5 +1,6 @@
 package com.pl.runner.stages;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
@@ -16,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.pl.runner.RunnerGame;
+import com.pl.runner.box2d.RunnerUserData;
 import com.pl.runner.entities.Enemy;
 import com.pl.runner.entities.Ground;
 import com.pl.runner.entities.Runner;
@@ -27,6 +29,8 @@ import com.pl.runner.utils.BodyUtils;
 import com.pl.runner.utils.Constants;
 import com.pl.runner.utils.WorldUtils;
 
+import java.util.ArrayList;
+
 public class GameStage extends Stage implements ContactListener{
     private static final int VIEWPORT_WIDTH = 20;
     private static final int VIEWPORT_HEIGHT = 13;
@@ -36,7 +40,7 @@ public class GameStage extends Stage implements ContactListener{
     private World world;
     private Ground ground;
     public static Sensor sensorUpClose, sensorUpFar, sensorDownClose, sensorDownFar;
-    private static Runner runner;
+    private ArrayList<Runner> runners = new ArrayList<Runner>();
     private SensorsLabel sensorsLabel;
     private ScoreLabel scoreLabel;
     private final float TIME_STEP = 1 / 300f;
@@ -92,8 +96,10 @@ public class GameStage extends Stage implements ContactListener{
         addActor(sensorDownFar);
     }
     private void initRunner() {
-        runner = new Runner(WorldUtils.createRunner(world));
-        addActor(runner);
+        for(int i=0;i<50;i++){
+            runners.add(new Runner(WorldUtils.createRunner(world)));
+            addActor(runners.get(i));
+        }
     }
 
     private void initEnemy() {
@@ -108,7 +114,7 @@ public class GameStage extends Stage implements ContactListener{
 
     private void update(Body body) {
         if (!BodyUtils.bodyInBounds(body)) {
-            if (BodyUtils.bodyIsEnemy(body) && !runner.isHit()) {
+            if (BodyUtils.bodyIsEnemy(body) && !runners.isEmpty()) {
                 initEnemy();
             }
             world.destroyBody(body);
@@ -118,7 +124,10 @@ public class GameStage extends Stage implements ContactListener{
     public void act(float delta) {
         super.act(delta);
         updateLabels();
-        GeneController.calculateOutput(runner);
+        isOver();
+        for (Runner runner:runners) {
+            GeneController.calculateOutput(runner);
+        }
 
         Array<Body> bodies = new Array<Body>(world.getBodyCount());
         world.getBodies(bodies);
@@ -133,16 +142,20 @@ public class GameStage extends Stage implements ContactListener{
             world.step(TIME_STEP, 6, 2);
             accumulator -= TIME_STEP;
         }
+    }
 
-        //TODO: Implement interpolation
-
+    private void isOver() {
+        if(runners.isEmpty()) {
+            saveProgress();
+            game.create();
+        }
     }
 
 
     private void updateLabels() {
         sensorsLabel.setText("Stan sensorow: \n"+sensorUpClose.isSensorEnabled()+" "+sensorUpFar.isSensorEnabled()+"\n"+sensorDownClose.isSensorEnabled()+" "+sensorDownFar.isSensorEnabled());
         score=(System.currentTimeMillis()-startTime)/100;
-        scoreLabel.setText("Najlepsza generacja: "+GeneController.getTopGeneration()+"\nNajlepszy wynik: "+GeneController.getTopScore()+"\nAktualny wynik: "+score);
+        scoreLabel.setText("Najlepsza generacja: "+GeneController.getTopGeneration()+"    Najlepszy wynik: "+GeneController.getTopScore()+"\n Aktualna generacja: "+game.getGeneration()+"     Aktualny wynik: "+score+"\n Ilość żywych biegaczy: "+runners.size());
     }
 
     @Override
@@ -163,9 +176,9 @@ public class GameStage extends Stage implements ContactListener{
         translateScreenToWorldCoordinates(x, y);
 
         if (rightSideTouched(touchPoint.x, touchPoint.y)) {
-            runner.jump();
+            runners.get(1).jump();
         }else if (leftSideTouched(touchPoint.x, touchPoint.y)) {
-            runner.dodge();
+            runners.get(1).dodge();
         }
 
         return super.touchDown(x, y, pointer, button);
@@ -174,8 +187,8 @@ public class GameStage extends Stage implements ContactListener{
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 
-        if (runner.isDodging()) {
-            runner.stopDodge();
+        if (runners.get(1).isDodging()) {
+            runners.get(1).stopDodge();
         }
 
         return super.touchUp(screenX, screenY, pointer, button);
@@ -187,17 +200,20 @@ public class GameStage extends Stage implements ContactListener{
         final Body b = contact.getFixtureB().getBody();
         if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsEnemy(b)) ||
                 (BodyUtils.bodyIsEnemy(a) && BodyUtils.bodyIsRunner(b))) {
-            runner.hit();
-
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    world.destroyBody(a);
-                    world.destroyBody(b);
-                    saveProgress();
-                    game.create();
+            Body c;
+            if(a.getUserData() instanceof RunnerUserData) c = a;
+            else c =  b;
+            for (final Runner r : runners){
+                if(r.getUserData() == c.getUserData()){
+                    Timer.schedule(new Timer.Task() {
+                        @Override
+                        public void run() {
+                            runners.remove(r);
+                        }
+                    },1);
+                    break;
                 }
-            },3);
+            }
 
         }else if ((BodyUtils.bodyIsEnemy(a) && BodyUtils.bodyIsSensor(b)) ||
                 (BodyUtils.bodyIsSensor(a) && BodyUtils.bodyIsEnemy(b))) {
@@ -212,7 +228,15 @@ public class GameStage extends Stage implements ContactListener{
             else if(whichSensor.x <= 3.5 && whichSensor.y < 2) sensorDownClose.changeState(true);
         } else if ((BodyUtils.bodyIsRunner(a) && BodyUtils.bodyIsGround(b)) ||
         (BodyUtils.bodyIsGround(a) && BodyUtils.bodyIsRunner(b))) {
-            runner.landed();
+            Body c;
+            if(a.getUserData() instanceof RunnerUserData) c = a;
+            else c =  b;
+            for (Runner r : runners){
+                if(r.getUserData() == c.getUserData()){
+                    r.landed();
+                    break;
+                }
+            }
         }
     }
 

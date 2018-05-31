@@ -14,7 +14,7 @@ public class ScoreLabel extends Label {
     }
 
     private void init() {
-        this.setX(Constants.GAME_WIDTH-180);
+        this.setX(Constants.GAME_WIDTH-380);
         this.setY(Constants.GAME_HEIGHT-40);
     }
 
