@@ -28,7 +28,7 @@ import com.pl.runner.utils.BodyUtils;
 import com.pl.runner.utils.Constants;
 import com.pl.runner.utils.WorldUtils;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class GameStage extends Stage implements ContactListener{
     private static final int VIEWPORT_WIDTH = 20;
@@ -39,7 +39,7 @@ public class GameStage extends Stage implements ContactListener{
     private World world;
     private Ground ground;
     public static Sensor sensorUpClose, sensorUpFar, sensorDownClose, sensorDownFar;
-    private ArrayList<Runner> runners = new ArrayList<Runner>();
+    private LinkedList<Runner> runners;
     private SensorsLabel sensorsLabel;
     private ScoreLabel scoreLabel;
     private final float TIME_STEP = 1 / 300f;
@@ -95,7 +95,8 @@ public class GameStage extends Stage implements ContactListener{
         addActor(sensorDownFar);
     }
     private void initRunner() {
-        for(int i=0;i<50;i++){
+        runners = new LinkedList<Runner>();
+        for(int i=0;i<30;i++){
             runners.add(new Runner(WorldUtils.createRunner(world)));
             addActor(runners.get(i));
         }
@@ -124,7 +125,7 @@ public class GameStage extends Stage implements ContactListener{
         super.act(delta);
         updateLabels();
         isOver();
-        for (Runner runner:runners) {
+        for (Runner runner : runners) {
             GeneController.calculateOutput(runner);
         }
 
@@ -143,8 +144,9 @@ public class GameStage extends Stage implements ContactListener{
         }
     }
 
+
     private void isOver() {
-        if(runners.isEmpty()) {
+         if(runners.isEmpty()) {
             saveProgress();
             game.create();
         }
@@ -154,7 +156,7 @@ public class GameStage extends Stage implements ContactListener{
     private void updateLabels() {
         sensorsLabel.setText("Stan sensorow: \n"+sensorUpClose.isSensorEnabled()+" "+sensorUpFar.isSensorEnabled()+"\n"+sensorDownClose.isSensorEnabled()+" "+sensorDownFar.isSensorEnabled());
         score=(System.currentTimeMillis()-startTime)/100;
-        scoreLabel.setText("Najlepsza generacja: "+GeneController.getTopGeneration()+"    Najlepszy wynik: "+GeneController.getTopScore()+"\n Aktualna generacja: "+game.getGeneration()+"     Aktualny wynik: "+score+"\n Ilość zywych biegaczy: "+runners.size());
+        scoreLabel.setText("Najlepsza generacja: "+GeneController.getTopGeneration()+"    Najlepszy wynik: "+GeneController.getTopScore()+"\n Aktualna generacja: "+game.getGeneration()+"     Aktualny wynik: "+score+"\n Ilosc zywych biegaczy: "+runners.size());
     }
 
     @Override
@@ -208,6 +210,7 @@ public class GameStage extends Stage implements ContactListener{
                         @Override
                         public void run() {
                             runners.remove(r);
+                            saveBestGenes();
                         }
                     },1);
                     break;
@@ -220,7 +223,6 @@ public class GameStage extends Stage implements ContactListener{
             if(BodyUtils.bodyIsSensor(a)) c = contact.getFixtureA().getBody();
             else c = contact.getFixtureB().getBody();
             Vector2 whichSensor = c.getPosition();
-            //System.out.println(c.getPosition()); wypisanie wektora kolizji
             if(whichSensor.x > 3.5 && whichSensor.y > 2) sensorUpFar.changeState(true);
             else if(whichSensor.x > 3.5 && whichSensor.y < 2) sensorDownFar.changeState(true);
             else if(whichSensor.x <= 3.5 && whichSensor.y > 2) sensorUpClose.changeState(true);
@@ -236,6 +238,15 @@ public class GameStage extends Stage implements ContactListener{
                     break;
                 }
             }
+        }
+    }
+
+    private void saveBestGenes() {
+        if(runners.size()==2) {
+            GeneController.setBestGenes(
+                    runners.get(0).getGenotype(),
+                    runners.get(1).getGenotype()
+            );
         }
     }
 

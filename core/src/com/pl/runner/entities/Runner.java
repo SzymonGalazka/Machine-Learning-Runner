@@ -44,6 +44,10 @@ public class Runner extends GameActor {
         }
     }
 
+    public Genotype getGenotype() {
+        return genotype;
+    }
+
     public void hit() {
         body.applyAngularImpulse(getUserData().getHitAngularImpulse(), true);
         isHit = true;

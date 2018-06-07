@@ -7,17 +7,23 @@ public class Genotype {
     private double genotype[];
     private static final double rangeStart = -0.5;
     private static final double rangeEnd = 0.5;
-    private static final int rangeStartInt = 0;
-    private static final int rangeEndInt = 3;
 
     public Genotype() {
-        createGenotype();
+        if(GeneController.getTopGeneration()==0) createGenotype();
+        else mutateGenotype();
+    }
 
+    private void mutateGenotype() {
+        genotype = new double[4];
+        double[] alphaGene = GeneController.mutate(GeneController.getAlphaGene());
+        for(int i=0;i<genotype.length;i++){
+            genotype[i] = alphaGene[i];
+        }
     }
 
     private void createGenotype() {
         genotype = new double[4];
-        for(int i = 0;i<genotype.length;i++) {             //kazda czesc genu dostaje random
+        for(int i = 0;i<genotype.length;i++) {
             genotype[i] = getRandomDouble();
         }
     }
@@ -25,8 +31,9 @@ public class Genotype {
     public static double getRandomDouble(){
         return ThreadLocalRandom.current().nextDouble(rangeStart, rangeEnd);
     }
-    public static int getRandomInt(){
-        return ThreadLocalRandom.current().nextInt(rangeStartInt, rangeEndInt +1);
+
+    public void setGenotype(double[] genotype) {
+        this.genotype = genotype;
     }
 
     public double[] getGenotype() {
